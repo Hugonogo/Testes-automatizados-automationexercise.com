@@ -1,172 +1,310 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Locator, type Page } from "@playwright/test";
 import { createUserData } from "./helpers/users-factory";
-import { faker } from "@faker-js/faker";
 
-
- const user = createUserData();
+type UserData = ReturnType<typeof createUserData>;
 
 test.beforeEach(async ({ page }) => {
   await page.goto("https://automationexercise.com/login");
 });
 
-test("Criar User", async ({ page }) => {
- 
+async function expectCampoObrigatorio(input: Locator) {
+  const validationMessage = await input.evaluate(
+    (element: HTMLInputElement | HTMLSelectElement) => element.validationMessage
+  );
+
+  expect(validationMessage.length).toBeGreaterThan(0);
+}
+
+async function iniciarCadastro(page: Page, user: UserData) {
   const nomeInput = page.locator('input[data-qa="signup-name"]');
-  const emailInput = page.locator('input[type="email"][data-qa="signup-email"]');
-  const buttonSubmit = page.locator('button[type="submit"][data-qa="signup-button"]');
-
-  const radioInput = page.locator(`input[type="radio"][id="id_gender${user.gender}"]`);
-
-  const passInput = page.locator('input[data-qa="password"][id="password"]');
-
-  const daySelect = page.locator('select[data-qa="days"][id="days"]');
-  const monthsSelect = page.locator('select[data-qa="months"][id="months"]');
-  const yearSelect = page.locator('select[data-qa="years"][id="years"]');
-
-  const firstNameInput = page.locator('input[data-qa="first_name"]');
-  const lastNameInput = page.locator('input[data-qa="last_name"]');
-
-  const companyInput = page.locator('input[data-qa="company"]');
-
-  const addressInput = page.locator('input[data-qa="address"]');
-  const addressInput2 = page.locator('input[data-qa="address2"]');
-
-  const signupInputName = page.locator('input[id="name"][data-qa="name"]');
-  const signupInputEmail = page.locator('input[data-qa="email"][id="email"]');
-
-  const countrySelect = page.locator('select[data-qa="country"]');
-
-  const stateInput = page.locator('input[data-qa="state"]');
-  const cityInput = page.locator('input[data-qa="city"]');
-  const zipCodeInput = page.locator('input[data-qa="zipcode"]');
-  const numberInput = page.locator('input[data-qa="mobile_number"]');
-
-  const createButton = page.locator('button[data-qa="create-account"]');
+  const emailInput = page.locator('input[data-qa="signup-email"]');
+  const buttonSubmit = page.locator('button[data-qa="signup-button"]');
 
   await nomeInput.fill(user.nome);
   await emailInput.fill(user.email);
   await buttonSubmit.click();
 
   await expect(page).toHaveURL(/signup/i);
+}
 
-  await radioInput.check();
-  await passInput.fill(user.senha);
+async function preencherFormularioCadastro(page: Page, user: UserData, skip: string[] = []
+) {
+  const shouldFill = (field: string) => !skip.includes(field);
 
-  await daySelect.selectOption(user.day);
-  await monthsSelect.selectOption(user.month);
-  await yearSelect.selectOption(user.year);
+  if (shouldFill("gender")) {
+    await page.locator(`input[id="id_gender${user.gender}"]`).check();
+  }
 
-  await firstNameInput.fill(user.firstName);
-  await lastNameInput.fill(user.lastName);
+  if (shouldFill("password")) {
+    await page.locator('input[data-qa="password"]').fill(user.senha);
+  }
 
-  await companyInput.fill(user.company);
+  if (shouldFill("day")) {
+    await page.locator('select[data-qa="days"]').selectOption(user.day);
+  }
 
-  await addressInput.fill(user.address);
-  await addressInput2.fill(user.address2);
+  if (shouldFill("month")) {
+    await page.locator('select[data-qa="months"]').selectOption(user.month);
+  }
 
-  await countrySelect.selectOption(user.country);
+  if (shouldFill("year")) {
+    await page.locator('select[data-qa="years"]').selectOption(user.year);
+  }
 
-  await stateInput.fill(user.state);
-  await cityInput.fill(user.city);
-  await zipCodeInput.fill(user.zipCode);
-  await numberInput.fill(user.mobileNumber);
+  if (shouldFill("firstName")) {
+    await page.locator('input[data-qa="first_name"]').fill(user.firstName);
+  }
 
-  await expect(signupInputName).toHaveValue(user.nome);
-  await expect(signupInputEmail).toHaveValue(user.email);
-  await expect(passInput).toHaveValue(user.senha);
-  await expect(radioInput).toBeChecked();
+  if (shouldFill("lastName")) {
+    await page.locator('input[data-qa="last_name"]').fill(user.lastName);
+  }
 
-  await expect(daySelect).toHaveValue(user.day);
-  await expect(monthsSelect).toHaveValue(user.month);
-  await expect(yearSelect).toHaveValue(user.year);
+  if (shouldFill("company")) {
+    await page.locator('input[data-qa="company"]').fill(user.company);
+  }
 
-  await expect(firstNameInput).toHaveValue(user.firstName);
-  await expect(lastNameInput).toHaveValue(user.lastName);
+  if (shouldFill("address")) {
+    await page.locator('input[data-qa="address"]').fill(user.address);
+  }
 
-  await expect(companyInput).toHaveValue(user.company);
-  await expect(countrySelect).toHaveValue(user.country);
-  await expect(stateInput).toHaveValue(user.state);
-  await expect(cityInput).toHaveValue(user.city);
-  await expect(zipCodeInput).toHaveValue(user.zipCode);
-  await expect(numberInput).toHaveValue(user.mobileNumber);
+  if (shouldFill("address2")) {
+    await page.locator('input[data-qa="address2"]').fill(user.address2);
+  }
 
-  await createButton.click();
+  if (shouldFill("country")) {
+    await page.locator('select[data-qa="country"]').selectOption(user.country);
+  }
+
+  if (shouldFill("state")) {
+    await page.locator('input[data-qa="state"]').fill(user.state);
+  }
+
+  if (shouldFill("city")) {
+    await page.locator('input[data-qa="city"]').fill(user.city);
+  }
+
+  if (shouldFill("zipCode")) {
+    await page.locator('input[data-qa="zipcode"]').fill(user.zipCode);
+  }
+
+  if (shouldFill("mobileNumber")) {
+    await page.locator('input[data-qa="mobile_number"]').fill(user.mobileNumber);
+  }
+}
+
+async function validarFormularioPreenchido(page: Page, user: UserData) {
+  await expect(page.locator('input[data-qa="name"]')).toHaveValue(user.nome);
+  await expect(page.locator('input[data-qa="email"]')).toHaveValue(user.email);
+  await expect(page.locator('input[data-qa="password"]')).toHaveValue(user.senha);
+
+  await expect(page.locator(`input[id="id_gender${user.gender}"]`)).toBeChecked();
+
+  await expect(page.locator('select[data-qa="days"]')).toHaveValue(user.day);
+  await expect(page.locator('select[data-qa="months"]')).toHaveValue(user.month);
+  await expect(page.locator('select[data-qa="years"]')).toHaveValue(user.year);
+
+  await expect(page.locator('input[data-qa="first_name"]')).toHaveValue(user.firstName);
+  await expect(page.locator('input[data-qa="last_name"]')).toHaveValue(user.lastName);
+  await expect(page.locator('input[data-qa="company"]')).toHaveValue(user.company);
+
+  await expect(page.locator('input[data-qa="address"]')).toHaveValue(user.address);
+  await expect(page.locator('input[data-qa="address2"]')).toHaveValue(user.address2);
+
+  await expect(page.locator('select[data-qa="country"]')).toHaveValue(user.country);
+  await expect(page.locator('input[data-qa="state"]')).toHaveValue(user.state);
+  await expect(page.locator('input[data-qa="city"]')).toHaveValue(user.city);
+  await expect(page.locator('input[data-qa="zipcode"]')).toHaveValue(user.zipCode);
+  await expect(page.locator('input[data-qa="mobile_number"]')).toHaveValue(user.mobileNumber);
+}
+
+async function criarUsuarioValido(page: Page, user: UserData) {
+  await iniciarCadastro(page, user);
+  await preencherFormularioCadastro(page, user);
+  await validarFormularioPreenchido(page, user);
+
+  await page.locator('button[data-qa="create-account"]').click();
 
   await expect(page).toHaveURL(/account_created/i);
+  await expect(page.getByText(/Account Created!/i)).toBeVisible();
+}
+
+test("Criar User Válido", async ({ page }) => {
+  const user = createUserData();
+
+  await criarUsuarioValido(page, user);
 });
 
-test("fazer Login válido", async ({page}) => {
-    const emailInput = page.locator(`input[data-qa="login-email"]`);
-    const passinput = page.locator(`input[data-qa="login-password"]`);
+test("não deve iniciar cadastro sem nome", async ({ page }) => {
+  const user = createUserData();
 
-    const buttonLogin = page.locator(`button[data-qa="login-button"]`);
+  const nomeInput = page.locator('input[data-qa="signup-name"]');
+  const emailInput = page.locator('input[data-qa="signup-email"]');
+  const buttonSubmit = page.locator('button[data-qa="signup-button"]');
 
-    await emailInput.fill("neoma45@hotmail.com");
-    await passinput.fill("uMv5hnylwvklhVy");
+  await emailInput.fill(user.email);
+  await buttonSubmit.click();
 
-    await buttonLogin.click();
-
-    await expect(page.getByText(/logged/i)).toBeVisible()
-
-
+  await expectCampoObrigatorio(nomeInput);
 });
 
-test("fazer Login com user que não existe", async({page}) =>{
-    const invalidUser = createUserData();
+test("não deve iniciar cadastro sem email", async ({ page }) => {
+  const user = createUserData();
 
-    const emailInput = page.locator(`input[data-qa="login-email"]`);
-    const passinput = page.locator(`input[data-qa="login-password"]`);
+  const nomeInput = page.locator('input[data-qa="signup-name"]');
+  const emailInput = page.locator('input[data-qa="signup-email"]');
+  const buttonSubmit = page.locator('button[data-qa="signup-button"]');
 
-    const buttonLogin = page.locator(`button[data-qa="login-button"]`);
+  await nomeInput.fill(user.nome);
+  await buttonSubmit.click();
 
-    
-    await emailInput.fill(invalidUser.email);
-    await passinput.fill(invalidUser.senha);
-
-    await buttonLogin.click();
-
-    await expect(page.getByText(/Your email or password is incorrect!/i)).toBeVisible();
-
+  await expectCampoObrigatorio(emailInput);
 });
 
-test("fazer Login com email e sem senha", async({page}) =>{
-    
+test("não deve iniciar cadastro com email inválido", async ({ page }) => {
+  const user = createUserData();
 
-    const emailInput = page.locator(`input[data-qa="login-email"]`);
-    const passinput = page.locator(`input[data-qa="login-password"]`);
+  const nomeInput = page.locator('input[data-qa="signup-name"]');
+  const emailInput = page.locator('input[data-qa="signup-email"]');
+  const buttonSubmit = page.locator('button[data-qa="signup-button"]');
 
-    const buttonLogin = page.locator(`button[data-qa="login-button"]`);
+  await nomeInput.fill(user.nome);
+  await emailInput.fill("email-invalido");
+  await buttonSubmit.click();
 
-    
-    await emailInput.fill(user.email);
-    
-
-    await buttonLogin.click();
-
-    const validationMessage = await passinput.evaluate(
-        (input: HTMLInputElement ) => input.validationMessage
-    );
-    
-    expect(validationMessage).toMatch(/preencha || fill/i);
+  await expectCampoObrigatorio(emailInput);
 });
 
-test("fazer Login sem email e com senha", async({page}) =>{
-    
+test("não deve criar conta sem senha", async ({ page }) => {
+  const user = createUserData();
 
-    const emailInput = page.locator(`input[data-qa="login-email"]`);
-    const passinput = page.locator(`input[data-qa="login-password"]`);
+  await iniciarCadastro(page, user);
+  await preencherFormularioCadastro(page, user, ["password"]);
 
-    const buttonLogin = page.locator(`button[data-qa="login-button"]`);
+  const passInput = page.locator('input[data-qa="password"]');
+  const buttonCreateAccount = page.locator('button[data-qa="create-account"]')
+  await buttonCreateAccount.click();
 
-    
-    await passinput.fill(user.senha);
-    
+  await expectCampoObrigatorio(passInput);
+});
 
-    await buttonLogin.click();
+test("não deve criar conta sem primeiro nome", async ({ page }) => {
+  const user = createUserData();
 
-    const validationMessage = await emailInput.evaluate(
-        (input: HTMLInputElement ) => input.validationMessage
-    );
-    
-    expect(validationMessage).toMatch(/preencha || fill/i);
+  await iniciarCadastro(page, user);
+  await preencherFormularioCadastro(page, user, ["firstName"]);
+
+  const firstNameInput = page.locator('input[data-qa="first_name"]');
+  
+  const buttonCreateAccount = page.locator('button[data-qa="create-account"]')
+  await buttonCreateAccount.click();
+
+  await expectCampoObrigatorio(firstNameInput);
+});
+
+test("não deve criar conta sem último nome", async ({ page }) => {
+  const user = createUserData();
+
+  await iniciarCadastro(page, user);
+  await preencherFormularioCadastro(page, user, ["lastName"]);
+
+  const lastNameInput = page.locator('input[data-qa="last_name"]');
+
+  const buttonCreateAccount = page.locator('button[data-qa="create-account"]')
+  await buttonCreateAccount.click();
+
+  await expectCampoObrigatorio(lastNameInput);
+});
+
+test("não deve criar conta sem endereço principal", async ({ page }) => {
+  const user = createUserData();
+
+  await iniciarCadastro(page, user);
+  await preencherFormularioCadastro(page, user, ["address"]);
+
+  const addressInput = page.locator('input[data-qa="address"]');
+
+  const buttonCreateAccount = page.locator('button[data-qa="create-account"]')
+  await buttonCreateAccount.click();
+
+  await expectCampoObrigatorio(addressInput);
+});
+
+test("não deve criar conta sem estado", async ({ page }) => {
+  const user = createUserData();
+
+  await iniciarCadastro(page, user);
+  await preencherFormularioCadastro(page, user, ["state"]);
+
+  const stateInput = page.locator('input[data-qa="state"]');
+
+  const buttonCreateAccount = page.locator('button[data-qa="create-account"]')
+  await buttonCreateAccount.click();
+
+  await expectCampoObrigatorio(stateInput);
+});
+
+test("não deve criar conta sem cidade", async ({ page }) => {
+  const user = createUserData();
+
+  await iniciarCadastro(page, user);
+  await preencherFormularioCadastro(page, user, ["city"]);
+
+  const cityInput = page.locator('input[data-qa="city"]');
+
+  const buttonCreateAccount = page.locator('button[data-qa="create-account"]')
+  await buttonCreateAccount.click();
+
+  await expectCampoObrigatorio(cityInput);
+});
+
+test("não deve criar conta sem zipcode", async ({ page }) => {
+  const user = createUserData();
+
+  await iniciarCadastro(page, user);
+  await preencherFormularioCadastro(page, user, ["zipCode"]);
+
+  const zipCodeInput = page.locator('input[data-qa="zipcode"]');
+
+  const buttonCreateAccount = page.locator('button[data-qa="create-account"]')
+  await buttonCreateAccount.click();
+
+  await expectCampoObrigatorio(zipCodeInput);
+});
+
+test("não deve criar conta sem número de telefone", async ({ page }) => {
+  const user = createUserData();
+
+  await iniciarCadastro(page, user);
+  await preencherFormularioCadastro(page, user, ["mobileNumber"]);
+
+  const mobileNumberInput = page.locator('input[data-qa="mobile_number"]');
+
+  const buttonCreateAccount = page.locator('button[data-qa="create-account"]')
+  await buttonCreateAccount.click();
+
+  await expectCampoObrigatorio(mobileNumberInput);
+});
+
+test("não deve cadastrar usuário com email já existente", async ({ page }) => {
+  const user = createUserData();
+
+  await criarUsuarioValido(page, user);
+
+  await page.locator('a[data-qa="continue-button"]').click();
+
+  await expect(page.getByText(/Logged in as/i)).toBeVisible();
+
+  await page.getByRole("link", { name: /logout/i }).click();
+
+  await expect(page).toHaveURL(/login/i);
+
+  const nomeInput = page.locator('input[data-qa="signup-name"]');
+  const emailInput = page.locator('input[data-qa="signup-email"]');
+  const buttonSubmit = page.locator('button[data-qa="signup-button"]');
+
+  await nomeInput.fill(user.nome);
+  await emailInput.fill(user.email);
+  await buttonSubmit.click();
+
+  await expect(page.getByText(/Email Address already exist!/i)).toBeVisible();
 });
