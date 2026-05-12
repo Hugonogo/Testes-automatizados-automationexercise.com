@@ -47,7 +47,7 @@ npx playwright show-report
 - Adicionar item ao carrinho e validar se foi adicionado
 - Remover itens do carrinho
 
-<img src="./assets/report1.png" />
+<img src="./report1.png" />
 
 ---
 
@@ -60,7 +60,7 @@ npx playwright show-report
 - Não deve fazer login sem email e com senha
 - Não deve fazer login sem email e sem senha
 
-<img src="./assets/report2.png" />
+<img src="./report2.png" />
 
 ---
 
@@ -80,7 +80,7 @@ npx playwright show-report
 - Não deve criar conta sem número de telefone
 - Não deve cadastrar usuário com email já existente
 
-<img src="./assets/report1.png" />
+<img src="./report3.png" />
 
 ---
 
