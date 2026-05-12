@@ -52,7 +52,7 @@ test("Adicionando um item no carrinho e verificar se foi adicionado", async({pag
     
     addItemToCart(page, productId)
 
-    await expect(page.getByText(/Your product has been added to cart./i)).toBeVisible();
+    await expect(page.getByText(/Your product has been added to carrinho./i)).toBeVisible();
 
     await page.goto("https://automationexercise.com/view_cart");
 
@@ -63,7 +63,7 @@ test("Adicionando um item no carrinho e verificar se foi adicionado", async({pag
 
 })
 
-test("Remover items do cart", async({page}) =>{
+test("Remover items do carrinho", async({page}) =>{
     await page.goto("https://automationexercise.com/view_cart")
 
     const buttonDeleteCart = page.locator("a.cart_quantity_delete")

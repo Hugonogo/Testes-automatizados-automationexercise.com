@@ -27,6 +27,28 @@ test("fazer Login válido", async ({page}) => {
 
 });
 
+test("fazer logout", async({page}) =>{
+     const emailInput = page.locator(`input[data-qa="login-email"]`);
+    const passinput = page.locator(`input[data-qa="login-password"]`);
+
+    const buttonLogin = page.locator(`button[data-qa="login-button"]`);
+
+    await emailInput.fill("neoma45@hotmail.com");
+    await passinput.fill("uMv5hnylwvklhVy");
+
+    await buttonLogin.click();
+    await expect(page.getByText(/logged/i)).toBeVisible();
+
+    const logoutButton = page.locator(`a[href="/logout"]`);
+
+    await logoutButton.click();
+
+    const signalSignup = page.locator(`a[href="/login"]`)
+
+    await expect(signalSignup).toHaveText(/signup/i)
+
+})
+
 test("Não deve fazer Login com user que não existe", async({page}) =>{
     const invalidUser = createUserData();
 
